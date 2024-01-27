@@ -67,7 +67,7 @@
   const footByInchesPattern = "/^d+(.([1-9]|1[0-2]))?$/";
 </script>
 
-<div class="size-full flex items-center justify-center flex-col gap-y-8 bg-gray-500">
+<div class="size-full max-h-[1000px] overflow-auto flex items-center justify-center flex-col gap-y-8 bg-gray-500">
   <form
     on:submit|preventDefault={handleSubmit}
     class="size-3/4 flex flex-col gap-y-4"
@@ -93,7 +93,7 @@
           <label for={`width${i}`}>Width</label>
           <input
             required
-            pattern="^\d+(\.([1-9]|1[0-2]))?$"
+            pattern="^\d+(\.([0-9]|1[0-2]))?$"
             id={`width${i}`}
             type="text"
             bind:value={dimension.width}
@@ -103,7 +103,7 @@
           <label for={`length${i}`}>Length</label>
           <input
             required
-            pattern="^\d+(\.([1-9]|1[0-2]))?$"
+            pattern="^\d+(\.([0-9]|1[0-2]))?$"
             id={`length${i}`}
             type="text"
             bind:value={dimension.length}
