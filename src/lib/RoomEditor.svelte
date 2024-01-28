@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import type { Dimension, Room } from "../models/Room";
   import { v4 as uuidv4 } from "uuid";
   import { roomStore } from "./RoomsStore";
 
-  const dispatchDoneEditing = createEventDispatcher<{roomEdited: boolean}>();
+  const dispatchDoneEditing = createEventDispatcher<{ roomEdited: boolean }>();
 
   let name: string = "";
   let description: string = "";
@@ -49,14 +49,14 @@
       ),
     };
 
-	roomStore.update((rooms) => [...rooms, room]);
+    roomStore.update((rooms) => [...rooms, room]);
 
-	dispatchDoneEditing('roomEdited', true);
+    dispatchDoneEditing("roomEdited", true);
   };
 
   const addDimension = () => {
     dimensionFields.push({ width: "", length: "", description: "" });
-	dimensionFields = dimensionFields;
+    dimensionFields = dimensionFields;
   };
 
   const removeDimension = (index: number) => {
@@ -67,10 +67,12 @@
   const footByInchesPattern = "/^d+(.([1-9]|1[0-2]))?$/";
 </script>
 
-<div class="size-full max-h-[1000px] overflow-auto flex items-center justify-center flex-col gap-y-8 bg-gray-500">
+<div
+  class="size-full max-h-[1000px] overflow-auto flex items-center justify-center flex-col gap-y-8 bg-gray-500"
+>
   <form
     on:submit|preventDefault={handleSubmit}
-    class="size-3/4 flex flex-col gap-y-4"
+    class="size-3/4 flex flex-col gap-y-4 desc-input:border desc-input:border-transparent invalid:desc-input:border-red-500 desc-textarea:border desc-textarea:border-transparent invalid:desc-textarea:border-red-500 desc-textarea:h-7 desc-[button[type='submit']]:invalid:bg-stone-200/30 desc-[button[type='submit']]:invalid:cursor-not-allowed desc-[button[type='submit']]:invalid:pointer-events-none"
   >
     <fieldset class="flex gap-x-4 py-4 px-6">
       <legend class="text-2xl font-bold">Room</legend>
@@ -123,9 +125,17 @@
     {/each}
 
     <div class="flex flex-row gap-2 w-full">
-      <button class="px-6 py-4 rounded bg-blue-200" on:click={addDimension} type="button">ADD DIMENSION</button>
+      <button
+        class="px-6 py-4 rounded bg-blue-200"
+        on:click={addDimension}
+        type="button">ADD DIMENSION</button
+      >
       <button class="px-6 py-4 rounded bg-green-200" type="submit">SAVE</button>
-	  <button class="px-6 py-4 rounded bg-red-200" type="button" on:click={() => dispatchDoneEditing("roomEdited", true)}>CANCEL</button>
+      <button
+        class="px-6 py-4 rounded bg-red-200"
+        type="button"
+        on:click={() => dispatchDoneEditing("roomEdited", true)}>CANCEL</button
+      >
     </div>
   </form>
 </div>
