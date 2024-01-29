@@ -1,9 +1,14 @@
 <script lang="ts">
+  import DimensionTable from "./lib/DimensionTable.svelte";
   import RoomEditor from "./lib/RoomEditor.svelte";
+  import RoomSummary from "./lib/RoomSummary.svelte";
   import { roomStore } from "./lib/RoomsStore";
 
   let isAddingRoom = false;
+  let isAddingJson = false;
   let deleteRoomId = "";
+  let jsonInput = "";
+  $: shouldModal = isAddingRoom || deleteRoomId || isAddingJson;
 
   const deleteRoom = (id: string) => {
     roomStore.update((rooms) => rooms.filter((room) => room.id !== id));
@@ -19,116 +24,78 @@
     a.href = url;
     a.download = "rooms.json";
     a.click();
-  };
+  }
+
+  const jsonToData = () => {
+    const rooms = JSON.parse(jsonInput);
+    roomStore.set(rooms);
+    isAddingJson = false;
+  }
 </script>
 
 <div class="w-screen h-screen bg-slate-400">
   <div class="flex flex-col w-full h-full relative py-4 px-8">
-    {#if isAddingRoom}
+    {#if shouldModal}
       <div
-        class="absolute w-full h-full left-0 top-0 flex items-center justify-center bg-black/50"
+        class="absolute w-full h-full left-0 top-0 flex items-center justify-center bg-black/50 z-10"
       >
-        <div class="size-5/6">
-          <RoomEditor on:roomEdited={() => (isAddingRoom = false)} />
-        </div>
-      </div>
-    {/if}
-
-    {#if deleteRoomId}
-      <div
-        class="absolute W-full h-screen left-0 top-0 flex items-center justify-center bg-black/50"
-      >
-        <div
-          class="size-72 flex flex-col justify-between bg-yellow-200 rounded p-16"
-        >
-          <p>Are you sure you want to delete this room?</p>
-
-          <div class="flex w-full gap-x-12">
-            <button
-              class="rounded px-4 py-2 bg-green-200"
-              on:click={() => (deleteRoomId = "")}>No</button
-            >
-            <button
-              class="rounded px-4 py-2 bg-red-200"
-              on:click={() => deleteRoom(deleteRoomId)}>Yes</button
-            >
+        {#if isAddingRoom}
+          <div class="size-5/6">
+            <RoomEditor on:roomEdited={() => (isAddingRoom = false)} />
           </div>
-        </div>
+        {/if}
+
+        {#if deleteRoomId}
+          <div
+            class="size-72 flex flex-col justify-between bg-yellow-200 rounded p-16"
+          >
+            <p>Are you sure you want to delete this room?</p>
+            <div class="flex w-full gap-x-12">
+              <button
+                class="rounded px-4 py-2 bg-green-200"
+                on:click={() => (deleteRoomId = "")}>No</button
+              >
+              <button
+                class="rounded px-4 py-2 bg-red-200"
+                on:click={() => deleteRoom(deleteRoomId)}>Yes</button
+              >
+            </div>
+          </div>
+        {/if}
+
+        {#if isAddingJson}
+          <div class="flex flex-col size-3/4 p-4 bg-slate-500">
+            <textarea bind:value={jsonInput} class="flex-1 whitespace-pre" />
+            <div class="flex-none flex justify-between pt-2">
+              <button class="rounded px-4 py-2 bg-cyan-500" on:click={jsonToData}>OVERRIDE</button>
+              <button class="rounded px-4 py-2 bg-red-500" on:click={() => isAddingJson = false}>CANCEL</button>
+            </div>
+          </div>
+        {/if} 
+
       </div>
     {/if}
 
     {#await $roomStore then rooms}
       <div class="flex-grow overflow-auto">
-        <ul class="flex flex-col min-h-min gap-2 shadow-inner">
+
+        {#if rooms.length}
+        <ul class="flex flex-col min-h-min gap-1 shadow-inner">
           {#each rooms as room}
             <li>
               <details class="child-summary:open:bg-slate-100">
-                <summary
-                  class="flex flex-row cursor-pointer justify-between gap-4 rounded bg-stone-200 border border-stone-800 desc-h2:font-bold desc-h2:underline desc-h2:uppercase px-6 py-2"
-                >
-                  <div class="flex flex-col basis-3/12">
-                    <h2>Name</h2>
-                    <p>{room.name}</p>
-                  </div>
-                  <div class="flex flex-col basis-4/12">
-                    <h2>Description</h2>
-                    <p>{room.description}</p>
-                  </div>
-                  <div class="flex flex-col basis-2/12">
-                    <h2>Square Foot</h2>
-                    <div>{room.squareFeet.toFixed(2)}</div>
-                  </div>
-                  <div class="flex flex-col items-center basis-2/12">
-                    <h2>Square inches</h2>
-                    <div>{room.squareInches.toFixed(2)}</div>
-                  </div>
-                  <button
-                    class="basis-1/12"
-                    on:click={() => (deleteRoomId = room.id)}>❌</button
-                  >
-                </summary>
-                <div class="px-3 pb-2 pt-1 w-full bg-stone-200">
-                  <table class="w-full">
-                    <thead>
-                      <tr class="child-th:bg-stone-600 child-th:text-white">
-                        <th>Wid(in)</th>
-                        <th>Len(in)</th>
-                        <th>Wid(ft)</th>
-                        <th>Len(ft)</th>
-                        <th>ft<sup>2</sup></th>
-                        <th>in<sup>2</sup></th>
-                        <th>Desc.</th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="child-tr:border-b child-tr:border-b-stone-600 last:child-tr:border-none hover:child-tr:bg-stone-50"
-                    >
-                      {#each room.dimensions as dimension}
-                        <tr>
-                          <td>{dimension.width}</td>
-                          <td>{dimension.length}</td>
-                          <td
-                            >{Math.floor(
-                              dimension.width / 12
-                            )}.{dimension.width % 12}</td
-                          >
-                          <td
-                            >{Math.floor(
-                              dimension.length / 12
-                            )}.{dimension.length % 12}</td
-                          >
-                          <td>{dimension.squareFeet.toFixed(2)}</td>
-                          <td>{dimension.squareInches}</td>
-                          <td>{dimension.description}</td>
-                        </tr>
-                      {/each}
-                    </tbody>
-                  </table>
-                </div>
+                <RoomSummary {room} on:deleteRoom={(x) => deleteRoom(x.detail)} />
+                <DimensionTable dimensions={room.dimensions} />
               </details>
             </li>
           {/each}
         </ul>
+        {:else}
+          <div class="w-full h-full flex items-center justify-center">
+            <h1 class="text-4xl font-bold text-yellow-800 animate-pulse">No rooms added yet</h1>
+          </div>
+        {/if}
+
       </div>
 
       <div
@@ -153,13 +120,23 @@
         </h3>
       </div>
 
-      <div class="flex flex-none flex-row w-full gap-4">
-        <button
-          class="rounded px-6 py-4 bg-green-200"
-          on:click={() => (isAddingRoom = true)}>ADD ROOM</button
-        >
-        <button class="rounded px-6 py-4 bg-yellow-500" on:click={saveToJson}>
-          SAVE JSON
+      <div class="w-full gap-4 justify-between flex-row flex">
+
+        <div class="flex flex-none flex-row gap-4">
+          <button
+            class="rounded px-6 py-4 bg-green-200"
+            on:click={() => (isAddingRoom = true)}
+          >
+            ADD ROOM
+          </button>
+
+          <button class="rounded px-6 py-4 bg-yellow-500" on:click={saveToJson}>
+            SAVE JSON
+          </button>
+        </div>
+        
+        <button on:click={() => isAddingJson = true} class="rounded px-6 py-4 bg-teal-500">
+          UPLOAD JSON
         </button>
       </div>
     {/await}

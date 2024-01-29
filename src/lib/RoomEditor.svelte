@@ -64,7 +64,6 @@
     dimensionFields = dimensionFields;
   };
 
-  const footByInchesPattern = "/^d+(.([1-9]|1[0-2]))?$/";
 </script>
 
 <div
